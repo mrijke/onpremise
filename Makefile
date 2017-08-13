@@ -1,5 +1,5 @@
 REPOSITORY?=sentry-onpremise
-TAG?=latest
+TAG?=8.19
 
 OK_COLOR=\033[32;01m
 NO_COLOR=\033[0m
