@@ -23,7 +23,6 @@ sudo dokku plugin:install https://github.com/dokku/dokku-postgres.git postgres
 2) Install official **redis** plugin
 ```
 sudo dokku plugin:install https://github.com/dokku/dokku-redis.git redis
-
 ```
 
 3) Install official **memcached** plugin
@@ -55,6 +54,11 @@ sudo dokku plugin:install https://github.com/dokku/dokku-letsencrypt.git
   dokku memcached:create sentry
   dokku memcached:link sentry sentry
   ```
+  * Create a storage mount
+  ```
+  dokku storage:mount sentry /var/lib/dokku/data/storage/sentry:/var/lib/sentry/files/
+  ```
+  
   * Set some config environment variables (secret key, SSL, email settings, see sentry.conf.py)
   ```
   dokku config:set sentry SENTRY_SECRET_KEY=... SENTRY_USE_SSL=1
