@@ -1,40 +1,68 @@
-# Sentry On-Premise
+# Sentry On-Premise for Dokku
 
-Official bootstrap for running your own [Sentry](https://sentry.io/) with [Docker](https://www.docker.com/).
+This repo is a fork of the official bootstrap for running your own [Sentry](https://sentry.io/) with [Docker](https://www.docker.com/).
+This repo adds some [Dokku](http://dokku.viewdocs.io/dokku/) specific configuration so that you can run Sentry inside Dokku easily.
 
 ## Requirements
 
- * Docker 1.10.0+
- * Compose 1.6.0+ _(optional)_
+ * [Dokku](http://dokku.viewdocs.io/dokku/) installed and running
 
 ## Up and Running
 
 Assuming you've just cloned this repository, the following steps
 will get you up and running in no time!
 
-There may need to be modifications to the included `docker-compose.yml` file to accommodate your needs or your environment. These instructions are a guideline for what you should generally do.
+### Install dokku plugins
+On your Dokku installation, install the following plugins:
 
-1. `mkdir -p data/{sentry,postgres}` - Make our local database and sentry config directories.
-    This directory is bind-mounted with postgres so you don't lose state!
-2. `docker-compose run --rm web config generate-secret-key` - Generate a secret key.
-    Add it to `docker-compose.yml` in `base` as `SENTRY_SECRET_KEY`.
-3. `docker-compose run --rm web upgrade` - Build the database.
-    Use the interactive prompts to create a user account.
-4. `docker-compose up -d` - Lift all services (detached/background mode).
-5. Access your instance at `localhost:9000`!
+1) Install official **postgresql** plugin
+```
+sudo dokku plugin:install https://github.com/dokku/dokku-postgres.git postgres
+```
 
-Note that as long as you have your database bind-mounted, you should
-be fine stopping and removing the containers without worry.
+2) Install official **redis** plugin
+```
+sudo dokku plugin:install https://github.com/dokku/dokku-redis.git redis
 
-## Securing Sentry with SSL/TLS
+```
 
-If you'd like to protect your Sentry install with SSL/TLS, there are
-fantastic SSL/TLS proxies like [HAProxy](http://www.haproxy.org/)
-and [Nginx](http://nginx.org/).
+3) Install official **memcached** plugin
+```
+sudo dokku plugin:install https://github.com/dokku/dokku-memcached.git memcached
+```
 
-## Resources
-
- * [Documentation](https://docs.sentry.io/server/installation/docker/)
- * [Bug Tracker](https://github.com/getsentry/onpremise)
- * [Forums](https://forum.sentry.io/c/on-premise)
- * [IRC](irc://chat.freenode.net/sentry) (chat.freenode.net, #sentry)
+4) Install dokku letsencrypt plugin (if SSL is required)
+```
+sudo dokku plugin:install https://github.com/dokku/dokku-letsencrypt.git
+```
+### Configure Dokku
+  * Create your app:
+  ```
+  dokku apps:create sentry
+  ```
+  * Create a PostgreSQL service
+  ```
+  dokku postgres:create sentry
+  dokku postgres:link sentry sentry
+  ```
+  * Create a Redis service
+  ```
+  dokku redis:create sentry
+  dokku redis:link sentry sentry
+  ```
+  * Create a Memcached service
+  ```
+  dokku memcached:create sentry
+  dokku memcached:link sentry sentry
+  ```
+  * Set some config environment variables (secret key, SSL, email settings, see sentry.conf.py)
+  ```
+  dokku config:set sentry SENTRY_SECRET_KEY=... SENTRY_USE_SSL=1
+  ```
+### Deploying
+In the directory of this cloned repo, add dokku as remote and deploy:
+```
+git remote add dokku dokku@dokku:sentry
+git push dokku master
+```
+And everything should be deployed!
