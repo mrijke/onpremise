@@ -37,6 +37,7 @@ from sentry.conf.server import *  # NOQA
 
 import os
 import os.path
+import dsnparse
 
 CONF_ROOT = os.path.dirname(__file__)
 
@@ -94,19 +95,28 @@ SENTRY_SINGLE_ORGANIZATION = env('SENTRY_SINGLE_ORGANIZATION', True)
 # Buffers, Quotas, TSDB
 
 redis = env('SENTRY_REDIS_HOST') or (env('REDIS_PORT_6379_TCP_ADDR') and 'redis')
-if not redis:
+redis_url = env('REDIS_URL')
+if not redis and not redis_url:
     raise Exception('Error: REDIS_PORT_6379_TCP_ADDR (or SENTRY_REDIS_HOST) is undefined, did you forget to `--link` a redis container?')
 
-redis_password = env('SENTRY_REDIS_PASSWORD') or ''
-redis_port = env('SENTRY_REDIS_PORT') or '6379'
-redis_db = env('SENTRY_REDIS_DB') or '0'
+if redis:
+    redis_password = env('SENTRY_REDIS_PASSWORD') or ''
+    redis_port = env('SENTRY_REDIS_PORT') or '6379'
+    redis_db = env('SENTRY_REDIS_DB') or '0'
+
+else:
+    r = dsnparse.parse(redis_url)
+    redist_host = r.host
+    redis_password = r.password
+    redis_port = r.port
+    redis_db = r.paths or '0'
 
 SENTRY_OPTIONS.update({
     'redis.clusters': {
         'default': {
             'hosts': {
                 0: {
-                    'host': redis,
+                    'host': redis or redist_host,
                     'password': redis_password,
                     'port': redis_port,
                     'db': redis_db,
@@ -124,6 +134,11 @@ SENTRY_OPTIONS.update({
 # requirement, it will optimize several high throughput patterns.
 
 memcached = env('SENTRY_MEMCACHED_HOST') or (env('MEMCACHED_PORT_11211_TCP_ADDR') and 'memcached')
+memcached_url = env('MEMCACHED_URL')
+if memcached_url:
+    m = dsnparse.parse(memcached_url)
+    memcached = m.host
+
 if memcached:
     memcached_port = (
         env('SENTRY_MEMCACHED_PORT')

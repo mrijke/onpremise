@@ -1,1 +1,2 @@
 # Add plugins here
+dsnparse==0.1.5

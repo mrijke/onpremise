@@ -1,0 +1,12 @@
+{
+	"name": "Sentry",
+	"description": "Sentry is a realtime event logging and aggregation platform",
+	"website": "http://getsentry.com",
+	"addons": [],
+	"env": {},
+	"scripts": {
+		"dokku": {
+			"postdeploy": "sentry --config=sentry.conf.py upgrade --noinput"
+		}
+	}
+}
