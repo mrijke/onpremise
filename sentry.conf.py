@@ -106,9 +106,9 @@ if redis:
 
 else:
     r = dsnparse.parse(redis_url)
-    redist_host = r.host
+    redis = r.host
     redis_password = r.password
-    redis_port = r.port
+    redis_port = str(r.port)
     redis_db = r.paths or '0'
 
 SENTRY_OPTIONS.update({
@@ -116,7 +116,7 @@ SENTRY_OPTIONS.update({
         'default': {
             'hosts': {
                 0: {
-                    'host': redis or redist_host,
+                    'host': redis,
                     'password': redis_password,
                     'port': redis_port,
                     'db': redis_db,
