@@ -41,6 +41,8 @@ import dsnparse
 
 CONF_ROOT = os.path.dirname(__file__)
 
+SENTRY_BEACON = False
+
 postgres = env('SENTRY_POSTGRES_HOST') or (env('POSTGRES_PORT_5432_TCP_ADDR') and 'postgres')
 if postgres:
     DATABASES = {
